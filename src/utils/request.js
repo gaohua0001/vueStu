@@ -10,7 +10,7 @@ import axios from 'axios'
 // 创建一个axios实例，相当于复制了一个axios
 // 我们通过这个实例去发请求，把需要的配置配置给这个实例
 const request = axios.create({
-    baseURL: 'http://ttapi.research.itcast.cn/'
+  baseURL: 'http://api-toutiao-web.itheima.net'
 })
 // axios({
 //     method: '',

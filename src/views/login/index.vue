@@ -12,17 +12,22 @@
         placeholder="请输入验证码"
         ></el-input>
       </el-form-item>
-        <el-form-item >
+        <el-form-item style="">
         <el-checkbox v-model="checked">我已阅读并同意协议和隐藏条款</el-checkbox>
       </el-form-item>
         <el-form-item>
-    <el-button class="login-btn" type="primary" @click="onSubmit">登录</el-button>
+    <el-button class="login-btn"
+    type="primary"
+    @click="onLogin"
+    :loading="loginLoading"
+    >登录</el-button>
   </el-form-item>
 </el-form>
   </div>
 </template>
 
 <script>
+import request from '@/utils/request.js'
 export default {
   name: 'LoginIndex',
   data () {
@@ -32,12 +37,32 @@ export default {
         code: ''
       },
       checked: false,
+      loginLoading: false,
       imgUrl: './company_logo.png'
     }
   },
   methods: {
-    onSubmit () {
-      console.log('submit!')
+    onLogin () {
+      const user = this.user
+      this.loginLoading = true
+      request({
+        method: 'POST',
+        url: '/app/v1_0/authorizations',
+        data: user
+      }).then(res => {
+        this.$message({
+          message: '恭喜你，这是一条成功消息',
+          type: 'success'
+        })
+        this.loginLoading = false
+        console.log(res)
+      }).catch(err => {
+        this.$message({
+          message: '警告哦，这是一条警告消息',
+          type: 'warning'
+        })
+        console.log('失败' + user, err)
+      })
     }
   }
 }
@@ -58,20 +83,19 @@ export default {
   background-size: cover;
   .login-form {
     background-color:#fff;
-    padding: 50px;
     min-width: 300px;
+    padding: 20px;
+    padding-bottom: 10px;
   }
   .login-btn {
     width: 100%;
   }
   .login_head{
     height: 57px;
-    width: 300px;
+    width: 175px;
     background: url(./company_logo.png) no-repeat;
     padding-bottom: 30px;
-    display: table-cell;
-    vertical-align: middle;
-    text-align: center;
+    margin-left: auto;
   }
 }
 </style>
