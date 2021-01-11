@@ -1,19 +1,23 @@
 <template>
   <div class="login-container">
-    <el-form class="login-form" ref="form" :model="user" >
+    <el-form class="login-form"
+      ref="login-form"
+      :model="user"
+      :rules="formRules"
+    >
       <div class="login_head"></div>
-      <el-form-item >
+      <el-form-item prop="mobile">
         <el-input v-model="user.mobile"
         placeholder="请输入手机号"
         ></el-input>
       </el-form-item>
-      <el-form-item >
+      <el-form-item prop="code">
         <el-input v-model="user.code"
         placeholder="请输入验证码"
         ></el-input>
       </el-form-item>
-        <el-form-item style="">
-        <el-checkbox v-model="checked">我已阅读并同意协议和隐藏条款</el-checkbox>
+        <el-form-item prop="agree">
+        <el-checkbox v-model="user.agree">我已阅读并同意协议和隐藏条款</el-checkbox>
       </el-form-item>
         <el-form-item>
     <el-button class="login-btn"
@@ -27,41 +31,74 @@
 </template>
 
 <script>
-import request from '@/utils/request.js'
+
+import { login } from '@/api/user.js'
 export default {
   name: 'LoginIndex',
   data () {
     return {
       user: {
         mobile: '',
-        code: ''
+        code: '',
+        agree: false
       },
       checked: false,
       loginLoading: false,
-      imgUrl: './company_logo.png'
+      imgUrl: './company_logo.png',
+      formRules: { // 表单验证规则配置
+        mobile: [
+          { required: true, message: '手机号不能为空', trigger: 'blur' },
+          { min: 1, max: 11, message: '长度在 1 到 11 个字符', trigger: 'blur' },
+          { pattern: /^1[0-9]{10}$/, message: '手机号格式错误', trigger: 'blur' }
+        ],
+        code: [
+          { required: true, message: '验证码不能为空', trigger: 'blur' },
+          { min: 1, max: 11, message: '长度在 1 到 11 个字符', trigger: 'blur' }
+        ],
+        agree: [
+          { // 自定义校验规则
+            validator: (rule, value, callback) => {
+              if (value) {
+                callback()
+                console.log('haha2')
+              } else {
+                callback(new Error('请同意用户协议'))
+                console.log('haha')
+              }
+            },
+            trigger: 'change'
+          }
+        ]
+      }
     }
   },
   methods: {
     onLogin () {
-      const user = this.user
+      // 表单验证
+      this.$refs['login-form'].validate((valid, err) => {
+        if (!valid) {
+          return
+        }
+        this.login()
+      })
+    },
+
+    login () {
       this.loginLoading = true
-      request({
-        method: 'POST',
-        url: '/app/v1_0/authorizations',
-        data: user
-      }).then(res => {
+      // login方法定义在api user.js
+      login(this.user).then(res => {
         this.$message({
-          message: '恭喜你，这是一条成功消息',
+          message: '登录成功',
           type: 'success'
         })
         this.loginLoading = false
         console.log(res)
       }).catch(err => {
         this.$message({
-          message: '警告哦，这是一条警告消息',
+          message: '登陆失败',
           type: 'warning'
         })
-        console.log('失败' + user, err)
+        console.log('失败' + this.user, err)
       })
     }
   }
